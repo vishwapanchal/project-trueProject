@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './TeamForm.css';
-import ClickSpark from '/src/components/ClickSpark';
+import ClickSpark from '/src/components/clickspark';
 
 const TeamForm = () => {
   // 1. State for the overall team & project

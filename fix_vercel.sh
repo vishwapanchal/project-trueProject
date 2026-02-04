@@ -1,55 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-set -e
+echo "🔍 Scanning codebase for incorrect ClickSpark imports..."
 
-PROJECT_ROOT="$(pwd)"
-SRC_DIR="$PROJECT_ROOT/src"
-COMPONENTS_DIR="$SRC_DIR/components"
+# Find all .js and .jsx files and replace 'components/ClickSpark' with 'components/clickspark'
+grep -rRl "components/ClickSpark" . --include=*.{js,jsx,ts,tsx} | xargs sed -i "s|components/ClickSpark|components/clickspark|g"
 
-echo "🔍 Checking component imports for case-sensitivity issues..."
-echo "------------------------------------------------------------"
+echo "✅ Replacement complete."
 
-# Find all JS/TS files
-FILES=$(find "$SRC_DIR" -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \))
+# Stage, Commit, and Push
+echo "📦 Staging changes..."
+git add .
+git commit -m "Fix all ClickSpark import paths case sensitivity"
+git push origin main
 
-ERRORS=0
-
-for file in $FILES; do
-  grep -E "from ['\"](.*/components/[^'\"]+)['\"]" "$file" | while read -r line; do
-    IMPORT_PATH=$(echo "$line" | sed -E "s/.*from ['\"](.*)['\"].*/\1/")
-    REL_PATH="${IMPORT_PATH#/}"
-
-    FULL_PATH="$PROJECT_ROOT/$REL_PATH"
-
-    # If file exists exactly → OK
-    if [ -f "$FULL_PATH.js" ] || [ -f "$FULL_PATH.jsx" ] || \
-       [ -f "$FULL_PATH.ts" ] || [ -f "$FULL_PATH.tsx" ]; then
-      continue
-    fi
-
-    # Try to fix casing
-    DIRNAME=$(dirname "$FULL_PATH")
-    BASENAME=$(basename "$FULL_PATH")
-
-    if [ -d "$DIRNAME" ]; then
-      MATCH=$(ls "$DIRNAME" | grep -i "^$BASENAME\.\(js\|jsx\|ts\|tsx\)$" | head -n 1)
-      if [ -n "$MATCH" ]; then
-        EXT="${MATCH##*.}"
-        echo "⚠️  Case mismatch fixed in $file → $MATCH"
-
-        sed -i "s|$IMPORT_PATH|${IMPORT_PATH%/*}/$(basename "$MATCH" .$EXT)|" "$file"
-        ERRORS=$((ERRORS + 1))
-      else
-        echo "❌ Missing component: $IMPORT_PATH (referenced in $file)"
-        ERRORS=$((ERRORS + 1))
-      fi
-    fi
-  done
-done
-
-echo "------------------------------------------------------------"
-if [ "$ERRORS" -eq 0 ]; then
-  echo "✅ No import issues found."
-else
-  echo "⚠️  Completed with $ERRORS issue(s). Review changes."
-fi
+echo "🚀 Pushed to GitHub!"

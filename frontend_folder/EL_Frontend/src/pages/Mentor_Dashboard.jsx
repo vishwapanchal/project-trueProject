@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectList from "./ProjectList";
 import "./Mentor_Dashboard.css";
-import ClickSpark from "/src/components/ClickSpark";
+import ClickSpark from "/src/components/clickspark";
 
 // --- HELPER: Skeleton Component ---
 const MentorDashboardSkeleton = () => {

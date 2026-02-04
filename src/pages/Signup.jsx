@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate
 import Navbar from '/src/components/Navbar.jsx';
 import './Login.css'; 
-import ClickSpark from '/src/components/ClickSpark';
+import ClickSpark from '/src/components/clickspark';
 const Signup = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState('student');

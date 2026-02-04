@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Home_page_projects.css";
 import Navbar from '/src/components/Navbar.jsx';
-import ClickSpark from '/src/components/ClickSpark';
+import ClickSpark from '/src/components/clickspark';
 
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);

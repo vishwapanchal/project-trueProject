@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TeamForm from "./TeamForm";
 import ProjectList from "./ProjectList";
 import "./Student_Dashboard.css";
-import ClickSpark from '/src/components/ClickSpark';
+import ClickSpark from '/src/components/clickspark';
 
 // --- HELPER: Skeleton Component ---
 const DashboardSkeleton = () => {

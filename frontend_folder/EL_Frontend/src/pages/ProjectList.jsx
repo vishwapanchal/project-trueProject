@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Projectlist.css";
-import ClickSpark from '/src/components/ClickSpark';
+import ClickSpark from '/src/components/clickspark';
 
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
