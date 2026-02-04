@@ -1,30 +1,55 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "Ì∫Ä Starting automatic fix..."
+set -e
 
-# 1. Fix the Root Copy (This is likely the one Vercel is building)
-if [ -f "src/pages/Home.jsx" ]; then
-    echo "Ì¥ß Fixing root src/pages/Home.jsx..."
-    # Replace ClickSpark with clickspark (case-sensitive)
-    sed -i "s|from '/src/components/ClickSpark'|from '/src/components/clickspark'|g" src/pages/Home.jsx
+PROJECT_ROOT="$(pwd)"
+SRC_DIR="$PROJECT_ROOT/src"
+COMPONENTS_DIR="$SRC_DIR/components"
+
+echo "üîç Checking component imports for case-sensitivity issues..."
+echo "------------------------------------------------------------"
+
+# Find all JS/TS files
+FILES=$(find "$SRC_DIR" -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \))
+
+ERRORS=0
+
+for file in $FILES; do
+  grep -E "from ['\"](.*/components/[^'\"]+)['\"]" "$file" | while read -r line; do
+    IMPORT_PATH=$(echo "$line" | sed -E "s/.*from ['\"](.*)['\"].*/\1/")
+    REL_PATH="${IMPORT_PATH#/}"
+
+    FULL_PATH="$PROJECT_ROOT/$REL_PATH"
+
+    # If file exists exactly ‚Üí OK
+    if [ -f "$FULL_PATH.js" ] || [ -f "$FULL_PATH.jsx" ] || \
+       [ -f "$FULL_PATH.ts" ] || [ -f "$FULL_PATH.tsx" ]; then
+      continue
+    fi
+
+    # Try to fix casing
+    DIRNAME=$(dirname "$FULL_PATH")
+    BASENAME=$(basename "$FULL_PATH")
+
+    if [ -d "$DIRNAME" ]; then
+      MATCH=$(ls "$DIRNAME" | grep -i "^$BASENAME\.\(js\|jsx\|ts\|tsx\)$" | head -n 1)
+      if [ -n "$MATCH" ]; then
+        EXT="${MATCH##*.}"
+        echo "‚ö†Ô∏è  Case mismatch fixed in $file ‚Üí $MATCH"
+
+        sed -i "s|$IMPORT_PATH|${IMPORT_PATH%/*}/$(basename "$MATCH" .$EXT)|" "$file"
+        ERRORS=$((ERRORS + 1))
+      else
+        echo "‚ùå Missing component: $IMPORT_PATH (referenced in $file)"
+        ERRORS=$((ERRORS + 1))
+      fi
+    fi
+  done
+done
+
+echo "------------------------------------------------------------"
+if [ "$ERRORS" -eq 0 ]; then
+  echo "‚úÖ No import issues found."
 else
-    echo "‚ö†Ô∏è  Root Home.jsx not found! Checking next location..."
+  echo "‚ö†Ô∏è  Completed with $ERRORS issue(s). Review changes."
 fi
-
-# 2. Fix the Nested Copy (Just in case you switch roots later)
-if [ -f "frontend_folder/EL_Frontend/src/pages/Home.jsx" ]; then
-    echo "Ì¥ß Fixing nested frontend_folder/.../Home.jsx..."
-    sed -i "s|from '/src/components/ClickSpark'|from '/src/components/clickspark'|g" frontend_folder/EL_Frontend/src/pages/Home.jsx
-fi
-
-# 3. Git Operations
-echo "Ì≥¶ Staging changes..."
-git add .
-
-echo "Ì≤æ Committing changes..."
-git commit -m "Fix case sensitivity import error for ClickSpark"
-
-echo "Ì∫Ä Pushing to origin master..."
-git push origin master
-
-echo "‚úÖ Done! Go check your Vercel Dashboard."
